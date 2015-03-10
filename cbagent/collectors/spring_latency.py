@@ -31,12 +31,12 @@ class SpringLatency(Latency):
         self.items = workload.items
 
     def measure(self, client, metric):
-        key = self.existing_keys.next(curr_items=self.items, curr_deletes=0)
+        key, ttl = self.existing_keys.next(curr_items=self.items, curr_deletes=0)
         doc = self.new_docs.next(key)
 
         t0 = time()
         if metric == "latency_set":
-            client.create(key, doc)
+            client.create(key, doc, ttl=ttl)
         elif metric == "latency_get":
             client.read(key)
         elif metric == "latency_cas":
@@ -72,7 +72,7 @@ class SpringQueryLatency(SpringLatency):
             self.new_queries = NewQueryNG(index_type, params)
 
     def measure(self, client, metric):
-        key = self.existing_keys.next(curr_items=self.items, curr_deletes=0)
+        key, _ = self.existing_keys.next(curr_items=self.items, curr_deletes=0)
         doc = self.new_docs.next(key)
         ddoc_name, view_name, query = self.new_queries.next(doc)
 
